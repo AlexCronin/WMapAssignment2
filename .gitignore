@@ -1,0 +1,51 @@
+test/
+test1/
+test2/
+test3/
+geodjango2/
+mysite/
+firstApp/
+cordovaAssignment/
+assignment/
+untitled/
+cordovaDemo/
+cordovaPOI/
+geodjango/
+
+amenities_url.txt
+
+wmap2019-cordova-master.zip
+wmap2019-django-master.zip
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# C extensions
+*.so
+
+# Distribution / packaging
+bin/
+build/
+develop-eggs/
+dist/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
