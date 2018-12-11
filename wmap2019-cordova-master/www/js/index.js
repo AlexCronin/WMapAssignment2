@@ -11,22 +11,24 @@ var URLS = {
     login: "/rest/tokenlogin/",
     userme: "/rest/userme/",
     updateposition: "/rest/updateposition/",
-    getamenities: "/rest/getamenities/",
     getpoi: "/rest/getpoi/",
     getfavpoi: "/rest/fav/"
 
 };
-
+// Map
 var map;
+
+// My position marker
 var posMarker;
-var geojsonLayer;
-var boundariesLayer;
+
+// For routes and navigating
 var routingControl;
 
-var markers = [];
+// Arrays for Markers on map
 var poimarkers = [];
 var favmarkers = [];
-//Layer group var
+
+//Layers For Markers on map
 var markerLayer;
 var markerLayer2;
 
@@ -35,14 +37,6 @@ var curIcon = L.ExtraMarkers.icon({
     iconColor: 'white',
     markerColor: 'blue',
     shape: 'square',
-    prefix: 'fa'
-});
-
-var amenityIcon = L.ExtraMarkers.icon({
-    icon: 'fa-info',
-    iconColor: 'white',
-    markerColor: 'orange',
-    shape: 'circle',
     prefix: 'fa'
 });
 
@@ -62,8 +56,6 @@ var favIcon = L.ExtraMarkers.icon({
     prefix: 'fa'
 });
 
-var locationWatchId;
-
 function onLoad() {
     console.log("In onLoad.");
     document.addEventListener('deviceready', onDeviceReady, false);
@@ -74,6 +66,10 @@ function onDeviceReady() {
     loadPOI();
     favouriteList();
 
+    // Buttons
+    //$("#btn-fav").on("touchstart", favouriteList);
+    $("#btn-addfav").on("touchstart", addFavourite);
+    $("#btn-favsubmit").on("touchstart", addFavourite);
     $("#btn-login").on("touchstart", loginPressed);
     $("#sp-logout").on("touchstart", logoutPressed);
 
@@ -81,11 +77,7 @@ function onDeviceReady() {
         $("#in-username").val(localStorage.lastUserName);
         $("#in-password").val(localStorage.lastUserPwd);
     }
-    // Buttons
-    $("#amenity-search-button").on("touchstart", amenitySearch);
-    //$("#btn-fav").on("touchstart", favouriteList);
-    $("#btn-addfav").on("touchstart", addFavourite);
-    $("#btn-favsubmit").on("touchstart", addFavourite);
+
 
     $(document).on("pagecreate", "#map-page", function (event) {
         console.log("In pagecreate. Target is " + event.target.id + ".");
@@ -267,7 +259,7 @@ function makeBasicMap() {
         btn.innerHTML = label;
         return btn;
     }
-/*      Alex
+/*
     map.on('click', function(e) {
     var container = L.DomUtil.create('div'),
         startBtn = createButton('Start from this location', container),
@@ -291,54 +283,6 @@ function makeBasicMap() {
     });
 */
 
-    /*
-    map.on("click", function (evt) {
-        //getCurrentlocation();
-        console.log("in click");
-        var container = L.DomUtil.create('div'),
-            destBtn = createButton('Directions to Here', container);
-        var mark1=L.marker([53.61, -6.5161]).bindPopup(L.popup({maxWidth:500}).setContent(container)).addTo(map);
-        var myPos = JSON.parse(localStorage.lastKnownCurrentPosition);
-        L.DomEvent.on(destBtn, 'click', function () {
-            routingControl.setWaypoints([myPos, evt.latlng]);
-            map.closePopup();
-        });
-    });
-    */
-    /*
-    map.on('popupopen', function(e) {
-
-      console.log(e.popup._source._popup._content);
-      console.log(e.popup._source._popup.latlng);
-    });
-    */
-
-
-    map.on("moveend", function () {
-        boundarySearch("cso:edgeom");
-    });
-/*
-    map.on("click", function (evt) {
-        if (localStorage.lastKnownCurrentPosition) {
-            var myPos = JSON.parse(localStorage.lastKnownCurrentPosition);
-            var myStartPoint = L.latLng(myPos.coords.latitude, myPos.coords.longitude);
-        }
-        console.log("in click")
-        var container = L.DomUtil.create('div'),
-            destBtn = createButton('Directions to Here', container);
-
-        L.popup()
-            .setContent(container)
-            .setLatLng(evt.latlng)
-            .openOn(map);
-
-        L.DomEvent.on(destBtn, 'click', function () {
-            routingControl.setWaypoints([myStartPoint, evt.latlng]);
-            map.closePopup();
-        });
-
-    });
-    */
 
     $("#leaflet-copyright").html("Leaflet | Map Tiles &copy; <a href='http://openstreetmap.org'>OpenStreetMap</a> contributors");
     loadPOI();
@@ -386,8 +330,6 @@ function favouriteList()
             var popupContent = "Name: " + data[i].name + "<br>Address: " + data[i].address + "<br> Phone No: " + data[i].contactNumber;
             //var popupContent = "Name: " + data.data[i].name + "<br>Address: " + data.data[i].address + "<br> Description: " + data.data[i].description  + "<br> Phone No: " + data.data[i].contactNumber;
 
-
-            //L.marker([data.data[i].latitude, data.data[i].longitude], {icon: poiIcon}).addTo(map);
             var favmarker = L.marker([data[i].latitude, data[i].longitude], {icon: favIcon}).bindPopup(popupContent).on('click', markerOnClick);
             favmarkers.push(favmarker);
         }
@@ -448,42 +390,6 @@ function addFavourite() {
     });
 
 }
-function amenitySearch() {
-    if (!$("#amenity-search-text").val()) {
-        showOkAlert("Empty search");
-        return
-    }
-    if (!map) {
-        showOkAlert("Cannot find map object");
-    }
-
-    var bboxString = map.getBounds().getSouth() + ", " + map.getBounds().getWest() + ", " + map.getBounds().getNorth() + ", " + map.getBounds().getEast();
-
-    $.ajax({
-        type: "GET",
-        headers: {"Authorization": localStorage.authtoken},
-        url: HOST + URLS["getamenities"],
-        data: {
-            amenity: $("#amenity-search-text").val(),
-            bbox: bboxString
-        }
-    }).done(function (data, status, xhr) {
-        if (map.hasLayer(geojsonLayer)) {
-            geojsonLayer.remove();
-        }
-        geojsonLayer = L.geoJSON(data, {
-            onEachFeature: popUp,
-            pointToLayer: function (feature, latlng) {
-                return L.marker(latlng, {icon: amenityIcon});
-            }
-        });
-        geojsonLayer.addTo(map);
-    }).fail(function (xhr, status, error) {
-        showOkAlert(error);
-    }).always(function () {
-        $.mobile.navigate("#map-page");
-    });
-}
 
 function popUp(feature, layer) {
     console.log("In popUp.");
@@ -497,59 +403,11 @@ function popUp(feature, layer) {
     console.log(out);
 }
 
-function boundarySearch(dataset) {
-    /*
-    * http://mf1.dit.ie:81/geoserver/cso/ows?
-    * service=WFS&version=1.1.0
-    * &request=GetFeature
-    * &bbox=51.0,-9.0,53.5,-7.0,urn:ogc:def:crs:EPSG:4326
-    * &typeName=cso:gageom
-    * &outputFormat=application%2Fjson
-    *
-    * */
-
-    if (!map) {
-        showOkAlert("Cannot find map object");
-    }
-
-    var bboxString = map.getBounds().getSouth() + ", " + map.getBounds().getWest() + ", " + map.getBounds().getNorth() + ", " + map.getBounds().getEast();
-    var urlString = GEOSERVER_HOST +
-        "ows?service=WFS&version=1.1.0&request=GetFeature&bbox=" +
-        bboxString + ",urn:ogc:def:crs:EPSG:4326&typeName=" +
-        dataset +
-        "&srsName=EPSG:4326&outputFormat=application%2Fjson";
-
-    $.ajax({
-        type: "GET",
-        headers: {"Authorization": localStorage.authtoken},
-        url: urlString
-    }).done(function (data, status, xhr) {
-        if (map.hasLayer(boundariesLayer)) {
-            boundariesLayer.remove();
-        }
-        boundariesLayer = L.geoJSON(data, {
-            style: function (feature) {
-                return {
-                    fill: false,
-                    weight: 2,
-                    opacity: 0.5,
-                    color: 'blue'
-                };
-            }
-        });
-        boundariesLayer.addTo(map);
-    }).fail(function (xhr, status, error) {
-        showOkAlert(error);
-    }).always(function () {
-        $.mobile.navigate("#map-page");
-    });
-}
 
 function loadPOI() {
 
     console.log("In loadPOI.");
     $.ajax({
-    //url: 'http://147.252.146.180:8000/rest/show_locations/?format=json',
     url: HOST + URLS["getpoi"],
     dataType:'json',
     //data: data,
@@ -558,20 +416,6 @@ function loadPOI() {
         console.log(data);
         console.log(data.data[0].address);
 
-        /*
-        if (map.hasLayer(markerLayer)) {
-            markerLayer.remove();
-            }
-            markerLayer = L.geoJSON(data.data, {
-            onEachFeature: popUp,
-            pointToLayer: function (feature, latlng) {
-                return L.marker(latlng, {icon: amenityIcon});
-            }
-            });
-            markerLayer.addTo(map);
-        */
-
-
         for (var i=0;i<data.data.length;i++)
         {
             var myLatLon = L.latLng(data.data[i].latitude,data.data[i].longitude );
@@ -579,16 +423,13 @@ function loadPOI() {
             var lng = data.data[i].longitude;
             var popupContent = "Name: " + data.data[i].name + "<br>Address: " + data.data[i].address + "<br> Phone No: " + data.data[i].contactNumber;
 
-
             //L.marker([data.data[i].latitude, data.data[i].longitude], {icon: poiIcon}).addTo(map);
-            var marker = L.marker([data.data[i].latitude, data.data[i].longitude], {icon: poiIcon}).bindPopup(popupContent);
+            var marker = L.marker([data.data[i].latitude, data.data[i].longitude], {icon: poiIcon}).bindPopup(popupContent).on('click', markerOnClick).addTo(map);
             poimarkers.push(marker);
         }
 
-
     }
     });
-
 
 }
 
@@ -610,8 +451,6 @@ function markerOnClick(e)
     //alert("hi. you clicked the marker at " + e.latlng);
     //alert("name: " + e.name);
     //console.log(attributes.toString());
-
-
 
     if(map.hasLayer(routingControl))
         map.removeLayer(routingControl);

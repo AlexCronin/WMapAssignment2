@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='utf-8'?>
 <widget id="ie.dit.wmap2018" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
-    <name>M-F Mapping 2018</name>
+    <name>Points of Interest</name>
     <description>
         A sample Apache Cordova application for WMAP2018.
     </description>
-    <author email="mark.foley@dit.ie" href="https://github.com/markfoleyie/wmap2018-cordova">
-        Mark Foley
+    <author email="alex.cronin@mydit.ie" href="https://github.com/AlexCronin/WMapAssignment2/tree/master/wmap2019-cordova-master">
+        Alex Cronin
     </author>
     <content src="index.html" />
     <access origin="*" />
