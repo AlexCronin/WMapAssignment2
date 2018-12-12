@@ -1,11 +1,7 @@
-//var HOST = "http://mf1.dit.ie:8511";
-//var HOST = "http://localhost:8000";
+
 var HOST = "http://192.168.1.5:8000";
-//var HOST = "http://147.252.138.44:8000";
-//var HOST = "http://142.93.34.200";
-var GEOSERVER_HOST = "http://mf2.dit.ie:8080/geoserver/";
-// var HOST = "http://localhost:8002";
-// var GEOSERVER_HOST = "http://mf1.dit.ie:82/geoserver/";
+var HOST = "http://147.252.146.180:8000";
+var HOST = "http://142.93.34.200";
 
 var URLS = {
     login: "/rest/tokenlogin/",
@@ -63,8 +59,7 @@ function onLoad() {
 
 function onDeviceReady() {
     console.log("In onDeviceReady.");
-    loadPOI();
-    favouriteList();
+
 
     // Buttons
     //$("#btn-fav").on("touchstart", favouriteList);
@@ -90,6 +85,8 @@ function onDeviceReady() {
 
         makeBasicMap();
         getCurrentlocation();
+        loadPOI();
+        favouriteList();
 
     });
 
@@ -311,6 +308,7 @@ function setUserName() {
 function favouriteList()
 {
     console.log("In favourites.");
+
     $.ajax({
     url: HOST + URLS["getfavpoi"],
     dataType:'json',
@@ -334,7 +332,6 @@ function favouriteList()
             favmarkers.push(favmarker);
         }
         showLayerGroup();
-        showLayerGroup();
     }
     });
 }
@@ -343,6 +340,21 @@ function addFavourite() {
 
     console.log("In Add Favourites.");
     $.mobile.navigate("#addfav-page");
+
+    var csrftoken = $.cookie('csrftoken');
+
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|POST|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
 
     var data = {"poiID": "poiID",
             "name": "name",
@@ -364,15 +376,16 @@ function addFavourite() {
     dataType:'json',
     //data: dataStr,
     data: {
-        username: $("#in-poiid").val(),
-        password: $("#in-name").val(),
-        username: $("#in-latitude").val(),
-        password: $("#in-longitude").val(),
-        username: $("#in-address").val(),
-        password: $("#in-description").val(),
-        username: $("#in-contactNumber").val(),
-        password: $("#in-imageFileName").val(),
-        password: $("#in-lastUpdate").val()
+        csrfmiddlewaretoken: '{{ csrf_token }}',
+        poiID: $("#in-poiid").val(),
+        name: $("#in-name").val(),
+        latitude: $("#in-latitude").val(),
+        longitude: $("#in-longitude").val(),
+        address: $("#in-address").val(),
+        description: $("#in-description").val(),
+        contactNumber: $("#in-contactNumber").val(),
+        imageFileName: $("#in-imageFileName").val(),
+        lastUpdate: $("#in-lastUpdate").val()
     },
     success: function(data) {
 
@@ -380,13 +393,6 @@ function addFavourite() {
 
 
     }
-    }).fail(function (xhr, status, error) {
-        var message = "Failed\n";
-        if ((!xhr.status) && (!navigator.onLine)) {
-            message += "Bad Internet Connection\n";
-        }
-        message += "Status: " + xhr.status + " " + xhr.responseText;
-        alert(message);
     });
 
 }
@@ -414,7 +420,7 @@ function loadPOI() {
     success: function(data) {
 
         console.log(data);
-        console.log(data.data[0].address);
+        //console.log(data.data[0].address);
 
         for (var i=0;i<data.data.length;i++)
         {
@@ -435,6 +441,8 @@ function loadPOI() {
 
 function showLayerGroup() {
     console.log("In showLayerGroup.");
+    console.log(poimarkers);
+    console.log(favmarkers);
     markerLayer = L.layerGroup(poimarkers);
     markerLayer2 = L.layerGroup(favmarkers);
     var overlays = { "Attractions": markerLayer, "Favourites": markerLayer2};
@@ -452,19 +460,15 @@ function markerOnClick(e)
     //alert("name: " + e.name);
     //console.log(attributes.toString());
 
-    if(map.hasLayer(routingControl))
-        map.removeLayer(routingControl);
-
-    if(map.hasLayer(routingControl)) {
-        routingControl.remove();
-    }
-    //$("#btn-navigate").on("touchstart", navigate(e.latlng));
-    navigate(e.latlng);
+    $("#btn-navigate").on("touchstart", navigate(e.latlng));
+    //navigate(e.latlng);
     
 }
 
 function navigate(dest) {
     console.log("In navigate");
+
+    removeRoutingControl();
 
     var mynewPos = JSON.parse(localStorage.lastKnownCurrentPosition);
     var mynewLatLon = L.latLng(mynewPos.coords.latitude, mynewPos.coords.longitude);
@@ -478,4 +482,12 @@ function navigate(dest) {
     routingControl.setWaypoints([mynewLatLon, dest]);
 
 }
+
+var removeRoutingControl = function () {
+    if (routingControl != null) {
+        map.removeControl(routingControl);
+        routingControl = null;
+        console.log("route removed");
+    }
+};
 

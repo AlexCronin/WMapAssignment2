@@ -5,8 +5,7 @@
 
     <meta http-equiv="Content-Security-Policy"
           content="default-src 'self' data: gap: https://ssl.gstatic.com
-                http://localhost:8000 http://localhost:8002 http://192.168.1.5:8000 http://147.252.138.44:8000 http://142.93.34.200
-              http://mf1.dit.ie:8511 http://mf1.dit.ie:81 http://mf1.dit.ie:82 http://mf2.dit.ie:8080
+                http://localhost:8000 http://localhost:8002 http://192.168.1.5:8000 http://147.252.146.180:8000 http://142.93.34.200
               https://*.tile.openstreetmap.org https://*.tile.osm.org
               http://*.tile.openstreetmap.org http://*.tile.osm.org
               https://router.project-osrm.org
@@ -39,6 +38,7 @@
     <script src="downloads/leaflet-control-geocoder-1.6.0/dist/Control.Geocoder.js"></script>
     <script type="text/javascript" src="cordova.js"></script>
     <script type="text/javascript" src="js/index.js" crossorigin="anonymous"></script>
+    <script src="downloads/jquery.cookie.js"></script>
 </head>
 
 <body onload="onLoad();">
@@ -127,7 +127,7 @@
     </div>
 
     <div class="content">
-        <form role="form">
+        <form role="form">{% csrf_token %}
             <div class="ui-field-contain">
 
                 <label id="label-in-poiid" for="in-poiid">
@@ -193,7 +193,7 @@
 <div data-role="page" style="background-color: white" id="map-page">
 
     <div id="map-var" style="width: 100%; height: 100%;"></div>
-    <div data-role="header" style="text-align:center; background-color: rgba(255,255,255,0.2);" data-position="fixed"
+    <div data-role="header" style="text-align:center; background-color: rgba(255,255,255,1.0);" data-position="fixed"
          data-tap-toggle="false">
         <table style="width: 100%">
             <tr>

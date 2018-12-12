@@ -16,6 +16,6 @@ urlpatterns = [
     url(r'^updateposition/$', rest_views.UpdatePosition.as_view(), name='update-position'),
     url(r'^getamenities/$', rest_views.get_amenities, name='get-amenities'),
     url(r'^getpoi/$', rest_views.get_poi, name='show_locations'),
-    url(r'^fav/$', rest_views.FavView.as_view(), name='fav_poi'),
-    #url(r'^fav/$', csrf_exempt(rest_views.FavView.as_view()), rest_views.FavView.as_view(), name='fav_poi'),
+    #url(r'^fav/$', rest_views.FavView.as_view(), name='fav_poi'),
+    url(r'^fav/$', csrf_exempt(rest_views.FavView.as_view()), name='fav_poi'),
 ]

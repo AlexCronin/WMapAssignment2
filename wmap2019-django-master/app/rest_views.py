@@ -18,6 +18,13 @@ from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+
+class CsrfExemptSessionAuthentication(SessionAuthentication):
+
+    def enforce_csrf(self, request):
+        return  # To not perform the csrf check previously happening
+
 """"
 class FavList(generics.ListAPIView):
     permission_classes = (permissions.IsAuthenticated,)
@@ -32,7 +39,7 @@ class FavList(generics.ListAPIView):
 
 
 class FavView(generics.ListAPIView):
-
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     serializer_class = serializers.FavSerializer
 
     @method_decorator(csrf_exempt)
