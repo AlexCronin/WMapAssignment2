@@ -91,7 +91,7 @@ DATABASES = {
         'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': 'webmapping2018',
         'USER': 'alex',
-        'PASSWORD': '10081993',
+        'PASSWORD': 
         'HOST': 'mydbwebmap18.cv4wiwdh6acj.us-east-1.rds.amazonaws.com',
     }
 
