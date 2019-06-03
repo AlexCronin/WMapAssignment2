@@ -2,7 +2,7 @@
 var HOST = "http://192.168.1.8:8000";   // Local Network
 //var HOST = "http://147.252.146.180:8000"; // College Local Network
 //var HOST = "http://142.93.34.200";
-//var HOST = "http://104.248.91.181";   // Digital Ocean Droplet
+var HOST = "http://104.248.91.181";   // Digital Ocean Droplet
 
 var URLS = {
     login: "/rest/tokenlogin/",
