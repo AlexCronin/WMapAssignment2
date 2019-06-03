@@ -95,15 +95,15 @@ class UserFriendGroup(models.Model):
 
 
 class Fav(models.Model):
-    poiID = models.CharField(max_length=80)
+    poiID = models.AutoField(primary_key=True)
     name = models.CharField(max_length=80)
     latitude = models.CharField(max_length=80)
     longitude = models.CharField(max_length=80)
-    address = models.CharField(max_length=80)
-    description = models.CharField(max_length=80)
-    contactNumber = models.CharField(max_length=80)
-    imageFileName = models.CharField(max_length=80)
-    lastUpdate = models.CharField(max_length=80)
+    address = models.CharField(max_length=80, blank=True, null=True)
+    description = models.CharField(max_length=80, blank=True, null=True)
+    contactNumber = models.CharField(max_length=80, blank=True, null=True)
+    imageFileName = models.CharField(max_length=80, blank=True, null=True)
+    lastUpdate = models.CharField(max_length=80, blank=True, null=True)
 
     def __str__(self):
         return self.name

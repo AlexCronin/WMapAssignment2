@@ -1,14 +1,16 @@
 
-var HOST = "http://192.168.1.5:8000";
-var HOST = "http://147.252.146.180:8000";
-var HOST = "http://142.93.34.200";
+var HOST = "http://192.168.1.8:8000";   // Local Network
+//var HOST = "http://147.252.146.180:8000"; // College Local Network
+//var HOST = "http://142.93.34.200";
+//var HOST = "http://104.248.91.181";   // Digital Ocean Droplet
 
 var URLS = {
     login: "/rest/tokenlogin/",
     userme: "/rest/userme/",
     updateposition: "/rest/updateposition/",
     getpoi: "/rest/getpoi/",
-    getfavpoi: "/rest/fav/"
+    getfavpoi: "/rest/fav/",
+    register: "/rest/register/"
 
 };
 // Map
@@ -25,8 +27,8 @@ var poimarkers = [];
 var favmarkers = [];
 
 //Layers For Markers on map
-var markerLayer;
-var markerLayer2;
+var markerLayerPOI;
+var markerLayerFav;
 
 var curIcon = L.ExtraMarkers.icon({
     icon: 'fa-crosshairs',
@@ -60,11 +62,22 @@ function onLoad() {
 function onDeviceReady() {
     console.log("In onDeviceReady.");
 
-
     // Buttons
-    //$("#btn-fav").on("touchstart", favouriteList);
-    $("#btn-addfav").on("touchstart", addFavourite);
-    $("#btn-favsubmit").on("touchstart", addFavourite);
+    $("#btn-home").on("touchstart", function () {
+        $.mobile.navigate("#main-page");
+    });
+    $("#btn-addfav").on("touchstart", function () {
+        $.mobile.navigate("#addfav-page");                  // Opens the Add Favourites page
+    });
+    $("#btn-login-main").on("touchstart", function () {
+        $.mobile.navigate("#login-page");                  // Opens the Login page
+    });
+    $("#btn-reg-main").on("touchstart", function () {
+        $.mobile.navigate("#register-page");                // Opens the Register page
+    });
+
+    $("#btn-regsubmit").on("touchstart", registerUser)
+    $("#btn-favsubmit").on("touchstart", addFavourite);     // Add Favourites submit button
     $("#btn-login").on("touchstart", loginPressed);
     $("#sp-logout").on("touchstart", logoutPressed);
 
@@ -87,12 +100,14 @@ function onDeviceReady() {
         getCurrentlocation();
         loadPOI();
         favouriteList();
+        //showLayerGroup();
 
     });
 
     $(document).on("pageshow", function (event) {
         console.log("In pageshow. Target is " + event.target.id + ".");
         if (!localStorage.authtoken) {
+            console.log("(1) Redirect: In pageshow. Target is " + event.target.id + ".");
             $.mobile.navigate("#login-page");
         }
         setUserName();
@@ -110,8 +125,8 @@ function onDeviceReady() {
         $.mobile.navigate("#map-page");
     } else {
         $.mobile.navigate("#login-page");
+        console.log("(2) Redirect:")
     }
-
 }
 
 
@@ -166,7 +181,7 @@ function getCurrentlocation() {
 
     navigator.geolocation.getCurrentPosition(
         function (pos) {
-            console.log("Got location")
+            console.log("Got current location")
             // myLatLon = L.latLng(pos.coords.latitude, pos.coords.longitude);
             myPos = new myGeoPosition(pos);
             localStorage.lastKnownCurrentPosition = JSON.stringify(myPos);
@@ -282,7 +297,6 @@ function makeBasicMap() {
 
 
     $("#leaflet-copyright").html("Leaflet | Map Tiles &copy; <a href='http://openstreetmap.org'>OpenStreetMap</a> contributors");
-    loadPOI();
 }
 
 function myGeoPosition(p) {
@@ -319,13 +333,12 @@ function favouriteList()
         //console.log(data[0]);
         //console.log(data.length);
         //console.log(data.data[0].address);
-        //$.mobile.navigate("#fav-page");
         for (var i=0;i<data.length;i++)
         {
             var myLatLon = L.latLng(data[i].latitude,data[i].longitude );
             var lat = data[i].latitude;
             var lng = data[i].longitude;
-            var popupContent = "Name: " + data[i].name + "<br>Address: " + data[i].address + "<br> Phone No: " + data[i].contactNumber;
+            var popupContent = "Name: " + data[i].name + "<br>Address: " + data[i].address + "<br> Phone No: " + data[i].contactNumber + "<br> Last Update: " + data[i].lastUpdate;
             //var popupContent = "Name: " + data.data[i].name + "<br>Address: " + data.data[i].address + "<br> Description: " + data.data[i].description  + "<br> Phone No: " + data.data[i].contactNumber;
 
             var favmarker = L.marker([data[i].latitude, data[i].longitude], {icon: favIcon}).bindPopup(popupContent).on('click', markerOnClick);
@@ -338,8 +351,16 @@ function favouriteList()
 
 function addFavourite() {
 
-    console.log("In Add Favourites.");
-    $.mobile.navigate("#addfav-page");
+    navigator.geolocation.getCurrentPosition(
+    function(position) {
+        localStorage.longitude = position.coords.longitude
+        localStorage.latitude = position.coords.latitude;
+        //alert(position.coords.latitude + ',' + position.coords.longitude);
+    },
+    function() {
+        alert('Error getting location');
+    });
+
 
     var csrftoken = $.cookie('csrftoken');
 
@@ -356,43 +377,45 @@ function addFavourite() {
         }
     });
 
-    var data = {"poiID": "poiID",
-            "name": "name",
-            "latitude":"latitude",
-            "longitude":"longitude",
-            "address": "address" ,
-            "description": "description",
-            "contactNumber":"contactNumber",
-            "imageFileName":"imageFileName",
-            "lastUpdate": "lastUpdate"
-            };
+    var today = new Date();
+    var dd = today.getDate();
+    var mm = today.getMonth()+1; //January is 0
+    var yyyy = today.getFullYear();
 
-    var dataStr = JSON.stringify(data);
+    if(dd<10) {
+        dd = '0'+dd
+    }
+    if(mm<10) {
+        mm = '0'+mm
+    }
+    today = dd + '/' + mm + '/' + yyyy;
 
     $.ajax({
     type: "POST",
     headers: {"Authorization": localStorage.authtoken},
     url: HOST + URLS["getfavpoi"],
     dataType:'json',
-    //data: dataStr,
     data: {
         csrfmiddlewaretoken: '{{ csrf_token }}',
-        poiID: $("#in-poiid").val(),
         name: $("#in-name").val(),
-        latitude: $("#in-latitude").val(),
-        longitude: $("#in-longitude").val(),
+        latitude: localStorage.latitude,
+        longitude: localStorage.longitude,
         address: $("#in-address").val(),
         description: $("#in-description").val(),
         contactNumber: $("#in-contactNumber").val(),
         imageFileName: $("#in-imageFileName").val(),
-        lastUpdate: $("#in-lastUpdate").val()
+        lastUpdate:  today
     },
-    success: function(data) {
-
-        console.log(data);
-
-
-    }
+    }).done(function (data, status, xhr) {
+        $.mobile.navigate("#map-page");
+        alert("Favourite Added");
+    }).fail(function (xhr, status, error) {
+        var message = "Failed\n";
+        if ((!xhr.status) && (!navigator.onLine)) {
+            message += "Bad Internet Connection\n";
+        }
+        message += "Status: " + xhr.status + " " + xhr.responseText;
+        alert(message);
     });
 
 }
@@ -430,10 +453,10 @@ function loadPOI() {
             var popupContent = "Name: " + data.data[i].name + "<br>Address: " + data.data[i].address + "<br> Phone No: " + data.data[i].contactNumber;
 
             //L.marker([data.data[i].latitude, data.data[i].longitude], {icon: poiIcon}).addTo(map);
-            var marker = L.marker([data.data[i].latitude, data.data[i].longitude], {icon: poiIcon}).bindPopup(popupContent).on('click', markerOnClick).addTo(map);
+            var marker = L.marker([data.data[i].latitude, data.data[i].longitude], {icon: poiIcon}).bindPopup(popupContent).on('click', markerOnClick);
             poimarkers.push(marker);
         }
-
+        showLayerGroup();
     }
     });
 
@@ -443,14 +466,14 @@ function showLayerGroup() {
     console.log("In showLayerGroup.");
     console.log(poimarkers);
     console.log(favmarkers);
-    markerLayer = L.layerGroup(poimarkers);
-    markerLayer2 = L.layerGroup(favmarkers);
-    var overlays = { "Attractions": markerLayer, "Favourites": markerLayer2};
-    console.log(overlays);
-    //var overlayPOI = { "Attractions": markerLayer};
-    //var overlayFav = { "Favourites": markerLayer2};
-    //L.control.layers(null, overlays, {position: 'bottomright'}).addTo(map);
-    L.control.layers(null, overlays).addTo(map);
+    markerLayerPOI = L.layerGroup(poimarkers);
+    markerLayerFav = L.layerGroup(favmarkers);
+    var myoverlays = { "Attractions": markerLayerPOI, "User Added": markerLayerFav};
+    console.log("The overlays: " + myoverlays);
+    //var overlayPOI = { "Attractions": markerLayerPOI};
+    //var overlayFav = { "User Added": markerLayerFav};
+    //L.control.layers(null, myoverlays, {position: 'bottomright'}).addTo(map);
+    L.control.layers(null, myoverlays).addTo(map);
 }
 
 function markerOnClick(e)
@@ -467,6 +490,7 @@ function markerOnClick(e)
 
 function navigate(dest) {
     console.log("In navigate");
+    console.log(dest);
 
     removeRoutingControl();
 
@@ -481,6 +505,50 @@ function navigate(dest) {
 
     routingControl.setWaypoints([mynewLatLon, dest]);
 
+}
+
+function registerUser() {
+
+    var csrftoken = $.cookie('csrftoken');
+
+    function csrfSafeMethod(method) {
+        // these HTTP methods do not require CSRF protection
+        return (/^(GET|POST|HEAD|OPTIONS|TRACE)$/.test(method));
+    }
+
+    $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+            if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+                xhr.setRequestHeader("X-CSRFToken", csrftoken);
+            }
+        }
+    });
+
+    $.ajax({
+    type: "POST",
+    //headers: {"Authorization": localStorage.authtoken},
+    url: HOST + URLS["register"],
+    dataType:'json',
+    data: {
+        csrfmiddlewaretoken: '{{ csrf_token }}',
+        username: $("#in-regusername").val(),
+        email: $("#in-regemail").val(),
+        first_name: $("#in-regfirst").val(),
+        last_name: $("#in-reglast").val(),
+        password: $("#in-regpassword").val(),
+    },
+
+    }).done(function (data, status, xhr) {
+        $.mobile.navigate("#map-page");
+        alert("Registration Successful");
+    }).fail(function (xhr, status, error) {
+        var message = "Failed\n";
+        if ((!xhr.status) && (!navigator.onLine)) {
+            message += "Bad Internet Connection\n";
+        }
+        message += "Status: " + xhr.status + " " + xhr.responseText;
+        alert(message);
+    });
 }
 
 var removeRoutingControl = function () {

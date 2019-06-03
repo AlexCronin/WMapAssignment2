@@ -57,37 +57,6 @@ def login_view(request):
     return render(request, 'app/login.html', {'form': form})
 
 
-def signup_view(request):
-    if request.POST:
-        form = forms.SignupForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data['username']
-            first_name = form.cleaned_data['first_name']
-            last_name = form.cleaned_data['last_name']
-            email = form.cleaned_data['email']
-            password = form.cleaned_data['password']
-
-            try:
-                user = get_user_model().objects.get(username=username)
-                if user:
-                    form.add_error(None, ValidationError("This user already exists."))
-            except get_user_model().DoesNotExist:
-                user = get_user_model().objects.create_user(username=username)
-
-                # Set user fields provided
-                user.set_password(password)
-                user.first_name = first_name
-                user.last_name = last_name
-                user.email = email
-                user.save()
-
-                return redirect(reverse('app:login'))
-    else:
-        form = forms.SignupForm()
-
-    return render(request, 'app/signup.html', {'form': form})
-
-
 class UserProfile(UpdateView):
     form_class = forms.UserProfileForm
     template_name = "app/user_profile.html"

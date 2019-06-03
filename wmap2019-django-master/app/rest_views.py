@@ -235,8 +235,39 @@ def get_amenities(request):
 @permission_classes((permissions.AllowAny,))
 @csrf_exempt
 def get_poi(request):
-    import urllib.request, json
-    with urllib.request.urlopen("https://data.dublinked.ie/dataset/b1a0ce0a-bfd4-4d0b-b787-69a519c61672/resource/b38c4d25-097b-4a8f-b9be-cf6ab5b3e704/download/walk-dublin-poi-details-sample-datap20130415-1449.json") as url:
+    import urllib.request, json, ssl
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    with urllib.request.urlopen("https://data.dublinked.ie/dataset/b1a0ce0a-bfd4-4d0b-b787-69a519c61672/resource/b38c4d25-097b-4a8f-b9be-cf6ab5b3e704/download/walk-dublin-poi-details-sample-datap20130415-1449.json", context=ctx) as url:
         data = json.loads(url.read().decode())
 
     return Response({"data": data}, status=status.HTTP_200_OK)
+
+
+@api_view(['POST', ])
+@permission_classes((permissions.AllowAny,))
+@csrf_exempt
+def register(request):
+    try:
+        username = request.data['username']
+        email = request.data['email']
+        first_name = request.data['first_name']
+        last_name = request.data['last_name']
+        password = request.data['password']
+
+    except KeyError:  # i.e incorrect details were sent
+        return Response({"message": "Please send the correct details"}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = get_user_model().objects.get(username=username)
+        if user:
+            return Response({"message": "User already exists"}, status=status.HTTP_400_BAD_REQUEST)
+    except get_user_model().DoesNotExist:
+        user = get_user_model().objects.create_user(username=username)
+        user.set_password(password)
+        user.email = email
+        user.first_name = first_name
+        user.last_name = last_name
+        user.save()
+        return Response({"message": "User successfully added"})

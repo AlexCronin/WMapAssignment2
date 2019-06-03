@@ -18,4 +18,5 @@ urlpatterns = [
     url(r'^getpoi/$', rest_views.get_poi, name='show_locations'),
     #url(r'^fav/$', rest_views.FavView.as_view(), name='fav_poi'),
     url(r'^fav/$', csrf_exempt(rest_views.FavView.as_view()), name='fav_poi'),
+    url(r'^register', csrf_exempt(rest_views.register), name="register"),
 ]

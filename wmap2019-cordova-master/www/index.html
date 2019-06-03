@@ -5,7 +5,7 @@
 
     <meta http-equiv="Content-Security-Policy"
           content="default-src 'self' data: gap: https://ssl.gstatic.com
-                http://localhost:8000 http://localhost:8002 http://192.168.1.5:8000 http://147.252.146.180:8000 http://142.93.34.200
+                http://localhost:8000 http://localhost:8002 http://192.168.1.8:8000 http://147.252.146.180:8000 http://142.93.34.200 http://104.248.91.181
               https://*.tile.openstreetmap.org https://*.tile.osm.org
               http://*.tile.openstreetmap.org http://*.tile.osm.org
               https://router.project-osrm.org
@@ -43,9 +43,11 @@
 
 <body onload="onLoad();">
 
-<div data-role="page" style="background-color: white" id="main-page">
+
+<!--<div data-role="page" style="background-color: white" id="main-page"> -->
+<div data-role="page" style="background-image: url(img/background_image.png); " id="main-page">
     <div id="main-div" data-role="main" class="ui-content">
-        <h1>Main Page placeholder2</h1>
+        <h1>Dublin City Attractions</h1>
     </div>
     <div data-role="header" style="text-align:center; background-color: rgba(255,255,255,0.8);" data-position="fixed"
          data-tap-toggle="false">
@@ -62,8 +64,14 @@
             </tr>
         </table>
     </div>
+        <button id="btn-login-main" type="button" >
+            Log In
+        </button>
+        <button id="btn-reg-main" type="button" >
+            Register
+        </button>
     <div data-role="footer" data-id="main-foot" class="ui-header ui-bar-a" role="banner" data-position="fixed"
-         style="text-align:center; background-color: rgba(255,255,255,0.2);" data-tap-toggle="false">
+         style="text-align:center; background-color: rgba(255,255,255,1.0);" data-tap-toggle="false">
         <table>
             <tr>
                 <td style="text-align: left; vertical-align: middle; width: 10%">
@@ -81,7 +89,7 @@
 
 <div data-role="page" style="background-color: white" id="fav-page">
     <div id="fav-div" data-role="main" class="ui-content">
-        <h1>Favourites Page</h1>
+        <h1>Add New POI Page</h1>
     </div>
     <div data-role="header" style="text-align:center; background-color: rgba(255,255,255,0.8);" data-position="fixed"
          data-tap-toggle="false">
@@ -113,27 +121,14 @@
 <!--<div data-role="page" style="background-image: url(img/background_image.png); " id="addfav-page"> -->
 <div data-role="page" style="background-color: rgba(255,255,255,0.8); " id="addfav-page">
     <div id="addfav-div" data-role="main" class="ui-content">
-        <h1>Add New Favourite</h1>
-    </div>
-    <div data-role="header" style="text-align:center; background-color: rgba(255,255,255,0.8);" data-position="fixed"
-         data-tap-toggle="false">
-        <table style="width: 100%">
-            <tr>
-                <td style="text-align: left; vertical-align: middle; width: 85%">
-                    <span style="font-size: large">Web Mapping 2018</span>
-                </td>
-            </tr>
-        </table>
+        <h1>Add New POI</h1>
     </div>
 
     <div class="content">
         <form role="form">{% csrf_token %}
             <div class="ui-field-contain">
 
-                <label id="label-in-poiid" for="in-poiid">
-                    <b>poiID</b>
-                    <input type="text" id="in-poiid">
-                </label>
+
                 <label for="in-name">
                     <b>Name</b>
                     <input type="text" id="in-name">
@@ -156,20 +151,12 @@
                 </label>
                 <label for="in-contactNumber">
                     <b>contactNumber</b>
-                    <input type="text" id="in-contactNumber">
-                </label>
-                <label for="in-imageFileName">
-                    <b>imageFileName</b>
-                    <input type="text" id="in-imageFileName">
-                </label>
-                <label for="in-lastUpdate">
-                    <b>lastUpdate</b>
-                    <input type="text" id="in-lastUpdate">
+                    <input type="tel" id="in-contactNumber">
                 </label>
             </div>
             <button id="btn-favsubmit" type="button" class="ui-btn ui-corner-all live-button"
                     style="background-color: #669966; color: white;">
-                <span class="fa fa-plus-square "></span> Add Favourite
+                <span class="fa fa-plus-square "></span> Add New POI
             </button>
         </form>
     </div>
@@ -193,8 +180,9 @@
 <div data-role="page" style="background-color: white" id="map-page">
 
     <div id="map-var" style="width: 100%; height: 100%;"></div>
-    <div data-role="header" style="text-align:center; background-color: rgba(255,255,255,1.0);" data-position="fixed"
+    <div data-role="header" style="text-align:center; background-color: rgba(255,255,255,0.0);" data-position="fixed"
          data-tap-toggle="false">
+        <span id="leaflet-copyright" style="font-size: xx-small"></span>
         <table style="width: 100%">
             <tr>
                 <td style="text-align: left; vertical-align: middle; width: 10%">
@@ -204,28 +192,26 @@
                 </td>
             </tr>
         </table>
-        <span id="leaflet-copyright" style="font-size: xx-small"></span>
+
     </div>
     <div data-role="footer" data-id="main-foot" class="ui-header ui-bar-a" role="banner" data-position="fixed" style="text-align:center; background-color: rgba(255,255,255,0.2);" data-tap-toggle="false">
-        <!--
-        <button href="#fav-page" id="btn-fav" type="button" >
-            Favourite
+
+        <button id="btn-home" type="button" >
+            Home
         </button>
-        -->
         <button id="btn-navigate" type="button" >
             Navigate
         </button>
         <button id="btn-addfav" type="button" >
-            Add Fav
+            Add New
         </button>
+
+
     </div>
 
 </div>
 
 <div data-role="page" data-dialog="true" data-close-btn="none" style="background-color: white" id="login-page">
-    <div data-role="header" style="text-align: center; background-color: silver">
-        <span style="font-size: x-large">Web Mapping 2018</span>
-    </div>
 
     <div data-role="main" class="ui-content"
          style="align-content: center; background-color: white">
@@ -239,6 +225,51 @@
             <button id="btn-login" type="button" class="ui-btn ui-corner-all live-button"
                     style="background-color: #669966; color: white;">
                 <span class="fa fa-sign-in fa-lg"></span> Log In
+            </button>
+        </form>
+    </div>
+</div>
+
+
+
+
+
+<div data-role="page" style="background-color: rgba(255,255,255,0.8); " id="register-page">
+    <div id="register-div" data-role="main" class="ui-content">
+        <h1>Register Page</h1>
+    </div>
+    <div class="content">
+        <form role="form">
+            {% csrf_token %}
+            <div class="ui-field-contain">
+                <label for="in-regusername">
+                    <b>Username</b>
+                    <input type="text" id="in-regusername">
+                </label>
+                <label for="in-regemail">
+                    <b>Email</b>
+                    <input type="email" id="in-regemail">
+                </label>
+                <label for="in-regfirst">
+                    <b>First</b>
+                    <input type="text" id="in-regfirst">
+                </label>
+                <label for="in-reglast">
+                    <b>Last</b>
+                    <input type="text" id="in-reglast">
+                </label>
+                <label for="in-regpassword">
+                    <b>Password</b>
+                    <input type="password" id="in-regpassword">
+                </label>
+                <label for="in-regpasswordagain">
+                    <b>Password Again</b>
+                    <input type="password" id="in-regpasswordagain">
+                </label>
+            </div>
+            <button id="btn-regsubmit" type="button" class="ui-btn ui-corner-all live-button"
+                    style="background-color: #669966; color: white;">
+                <span class="fa fa-plus-square "></span> Register User
             </button>
         </form>
     </div>
