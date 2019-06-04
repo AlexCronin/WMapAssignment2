@@ -63,6 +63,8 @@ function onDeviceReady() {
     console.log("In onDeviceReady.");
 
     // Buttons
+    $("#btn-navigate").on("touchstart", getRoute)
+
     $("#btn-home").on("touchstart", function () {
         $.mobile.navigate("#main-page");
     });
@@ -107,7 +109,7 @@ function onDeviceReady() {
     $(document).on("pageshow", function (event) {
         console.log("In pageshow. Target is " + event.target.id + ".");
         if (!localStorage.authtoken) {
-            console.log("(1) Redirect: In pageshow. Target is " + event.target.id + ".");
+            console.log("(1) No Token Redirect: In pageshow. Target is " + event.target.id + ".");
             $.mobile.navigate("#login-page");
         }
         setUserName();
@@ -125,7 +127,7 @@ function onDeviceReady() {
         $.mobile.navigate("#map-page");
     } else {
         $.mobile.navigate("#login-page");
-        console.log("(2) Redirect:")
+        console.log("(2) No Token Redirect:")
     }
 }
 
@@ -159,7 +161,8 @@ function loginPressed() {
 function logoutPressed() {
     console.log("In logoutPressed.");
     localStorage.removeItem("authtoken");
-    $.mobile.navigate("#login-page");
+    showOkAlert("Successfully Logged Out");
+    $.mobile.navigate("#main-page");
     // $.ajax({
     //     type: "GET",
     //     headers: {"Authorization": localStorage.authtoken}
@@ -344,6 +347,8 @@ function favouriteList()
             var favmarker = L.marker([data[i].latitude, data[i].longitude], {icon: favIcon}).bindPopup(popupContent).on('click', markerOnClick);
             favmarkers.push(favmarker);
         }
+        map.removeLayer(markerLayerPOI);
+        map.removeLayer(markerLayerFav);
         showLayerGroup();
     }
     });
@@ -409,6 +414,7 @@ function addFavourite() {
     }).done(function (data, status, xhr) {
         $.mobile.navigate("#map-page");
         alert("Favourite Added");
+        favouriteList();
     }).fail(function (xhr, status, error) {
         var message = "Failed\n";
         if ((!xhr.status) && (!navigator.onLine)) {
@@ -466,6 +472,9 @@ function showLayerGroup() {
     console.log("In showLayerGroup.");
     console.log(poimarkers);
     console.log(favmarkers);
+    //map.removeLayer(markerLayerPOI);
+    //map.removeLayer(markerLayerFav);
+    //map.removeLayer(myoverlays);
     markerLayerPOI = L.layerGroup(poimarkers);
     markerLayerFav = L.layerGroup(favmarkers);
     var myoverlays = { "Attractions": markerLayerPOI, "User Added": markerLayerFav};
@@ -501,12 +510,15 @@ function navigate(dest) {
     routingControl = L.Routing.control({
         createMarker: function() { return null; }
     });
-    routingControl.addTo(map);
+    //routingControl.addTo(map);
 
     routingControl.setWaypoints([mynewLatLon, dest]);
 
 }
 
+function getRoute() {
+    routingControl.addTo(map);
+}
 function registerUser() {
 
     var csrftoken = $.cookie('csrftoken');
